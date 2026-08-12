@@ -16,10 +16,10 @@ Projeto criado como parte do meu portfólio, aplicando conceitos de arquitetura 
 
 ## 🌐 Demo
 
-- **API:** `https://SEU-LINK-AQUI.onrender.com`
-- **Documentação interativa (Swagger):** `https://SEU-LINK-AQUI.onrender.com/swagger-ui.html`
+- **API:** `https://controle-financeiro-8zgj.onrender.com`
+- **Documentação interativa (Swagger):** `https://controle-financeiro-8zgj.onrender.com/swagger-ui/index.html`
 
-> Atualize este link depois de fazer o deploy.
+> ⚠️ Hospedado no plano gratuito do Render: se ninguém acessar por um tempo, o servidor "dorme" e a primeira requisição pode levar 30-50 segundos para responder.
 
 ## 🏗️ Arquitetura
 
@@ -46,7 +46,7 @@ Exception   → tratamento centralizado de erros
 - [x] Configuração para deploy em nuvem (PostgreSQL + variáveis de ambiente)
 - [x] Autenticação com Spring Security + JWT
 - [x] Isolamento de dados por usuário (cada um só vê os próprios registros)
-- [ ] Deploy publicado (Render/Railway)
+- [x] Deploy publicado (Render)
 
 ## ▶️ Como executar
 
