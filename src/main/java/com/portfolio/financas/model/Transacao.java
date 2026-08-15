@@ -52,6 +52,27 @@ public class Transacao {
     private Categoria categoria;
 
     /**
+     * Conta bancária/carteira onde a transação ocorreu. Opcional, pra não
+     * obrigar quem não quiser detalhar contas a preencher isso.
+     */
+    @ManyToOne
+    @JoinColumn(name = "conta_id")
+    private Conta conta;
+
+    /** Se já foi de fato recebida/paga, ou ainda está pendente. */
+    @Enumerated(EnumType.STRING)
+    private StatusTransacao status = StatusTransacao.CONFIRMADA;
+
+    /** Se é um gasto/receita fixo (se repete todo mês) ou variável. */
+    @Enumerated(EnumType.STRING)
+    private NaturezaTransacao natureza = NaturezaTransacao.VARIAVEL;
+
+    /** Ex: "Cartão de crédito", "Pix", "Dinheiro". Texto livre, opcional. */
+    private String formaPagamento;
+
+    private String observacao;
+
+    /**
      * Dono da transação, definido automaticamente pelo servidor a partir
      * do usuário logado — por isso fica oculto na entrada e saída do JSON.
      */

@@ -29,6 +29,10 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
 
+    /**
+     * BCrypt: algoritmo padrão de mercado pra hash de senha. Nunca guardamos
+     * senha em texto puro — só o hash, que é irreversível.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -47,9 +51,17 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
+    /**
+     * CORS (Cross-Origin Resource Sharing): por padrão, navegadores bloqueiam
+     * um site JavaScript de chamar uma API hospedada em outro domínio.
+     * Aqui liberamos explicitamente isso, já que o frontend (ex: GitHub Pages)
+     * roda num endereço diferente da API (Render).
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
+        // "*" libera qualquer origem — ok para um projeto de portfólio público;
+        // em uma aplicação real de produção, troque pela URL exata do frontend.
         config.setAllowedOriginPatterns(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
@@ -64,14 +76,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // API stateless: não usamos sessão de servidor, cada requisição
+                // se autentica sozinha via token JWT
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Rotas públicas: cadastro, login, documentação e console H2
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
+                        // Todo o resto exige token válido
                         .anyRequest().authenticated()
                 )
+                // Necessário pro console do H2 funcionar dentro de um <frame>
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -1,0 +1,31 @@
+# --- Etapa 1: build ---
+# Usamos uma imagem com Maven + Java só para compilar o projeto.
+# Essa imagem "some" no final, não faz parte da imagem publicada.
+FROM maven:3.9-eclipse-temurin-17 AS build
+
+WORKDIR /app
+
+# Copiamos primeiro só o pom.xml para aproveitar cache de camadas do Docker:
+# se as dependências não mudarem, o Docker não baixa tudo de novo a cada build.
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Agora copiamos o código-fonte e compilamos, pulando os testes
+# (os testes já rodam no seu ambiente/CI, não precisam rodar de novo aqui)
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# --- Etapa 2: imagem final, só com o necessário para RODAR ---
+# JRE (não JDK completo) deixa a imagem bem mais leve.
+FROM eclipse-temurin:17-jre-alpine
+
+WORKDIR /app
+
+# Copia só o .jar final gerado na etapa de build
+COPY --from=build /app/target/controle-financeiro-0.0.1-SNAPSHOT.jar app.jar
+
+# O Vercel injeta a variável PORT automaticamente — nossa aplicação já
+# está configurada (application.properties) para escutar nessa porta.
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

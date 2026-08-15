@@ -2,7 +2,6 @@ package com.portfolio.financas.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,7 +36,7 @@ public class JwtUtil {
                 .subject(userDetails.getUsername()) // aqui guardamos o email
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiracaoMs))
-                .signWith(getChaveAssinatura(), SignatureAlgorithm.HS256)
+                .signWith(getChaveAssinatura())
                 .compact();
     }
 

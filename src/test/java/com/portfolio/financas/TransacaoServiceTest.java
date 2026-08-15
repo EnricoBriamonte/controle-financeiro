@@ -26,6 +26,10 @@ import static org.mockito.Mockito.when;
  * dados nem contexto de segurança de verdade. TransacaoRepository e
  * SecurityUtils são substituídos por "dublês" (mocks) que devolvem
  * dados fixos controlados pelo teste.
+ *
+ * Usamos setters (em vez do construtor com todos os campos) porque a
+ * entidade Transacao ganha novos campos com frequência — assim o teste
+ * não quebra sempre que um campo novo é adicionado.
  */
 class TransacaoServiceTest {
 
@@ -43,14 +47,33 @@ class TransacaoServiceTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    private Transacao criarTransacao(String descricao, BigDecimal valor, LocalDate data, TipoTransacao tipo, Categoria categoria, Usuario usuario) {
+        Transacao t = new Transacao();
+        t.setDescricao(descricao);
+        t.setValor(valor);
+        t.setData(data);
+        t.setTipo(tipo);
+        t.setCategoria(categoria);
+        t.setUsuario(usuario);
+        return t;
+    }
+
     @Test
     void deveCalcularSaldoMensalCorretamente() {
-        Usuario usuario = new Usuario(1L, "Maria", "maria@email.com", "hash-fake");
-        Categoria categoria = new Categoria(1L, "Salário", "", null, usuario);
+        Usuario usuario = new Usuario();
+        usuario.setId(1L);
+        usuario.setNome("Maria");
+        usuario.setEmail("maria@email.com");
+        usuario.setSenha("hash-fake");
 
-        Transacao receita = new Transacao(1L, "Salário de agosto", new BigDecimal("3000.00"),
+        Categoria categoria = new Categoria();
+        categoria.setId(1L);
+        categoria.setNome("Salário");
+        categoria.setUsuario(usuario);
+
+        Transacao receita = criarTransacao("Salário de agosto", new BigDecimal("3000.00"),
                 LocalDate.of(2026, 8, 5), TipoTransacao.RECEITA, categoria, usuario);
-        Transacao despesa = new Transacao(2L, "Aluguel", new BigDecimal("1200.00"),
+        Transacao despesa = criarTransacao("Aluguel", new BigDecimal("1200.00"),
                 LocalDate.of(2026, 8, 10), TipoTransacao.DESPESA, categoria, usuario);
 
         YearMonth mes = YearMonth.of(2026, 8);
