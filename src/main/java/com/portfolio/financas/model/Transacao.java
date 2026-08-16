@@ -73,6 +73,17 @@ public class Transacao {
     private String observacao;
 
     /**
+     * Se essa transação foi gerada automaticamente a partir de uma
+     * Recorrencia (ex: assinatura mensal), guardamos a referência aqui.
+     * Isso é o que permite ao sistema saber "já gerei o lançamento de
+     * Netflix desse mês?" antes de gerar de novo.
+     */
+    @ManyToOne
+    @JoinColumn(name = "recorrencia_origem_id")
+    @JsonIgnore
+    private Recorrencia recorrenciaOrigem;
+
+    /**
      * Dono da transação, definido automaticamente pelo servidor a partir
      * do usuário logado — por isso fica oculto na entrada e saída do JSON.
      */

@@ -1,6 +1,7 @@
 package com.portfolio.financas.service;
 
 import com.portfolio.financas.exception.RecursoNaoEncontradoException;
+import com.portfolio.financas.model.StatusTransacao;
 import com.portfolio.financas.model.TipoTransacao;
 import com.portfolio.financas.model.Transacao;
 import com.portfolio.financas.model.Usuario;
@@ -89,10 +90,60 @@ public class TransacaoService {
                 ));
     }
 
+    /**
+     * Gera um CSV simples (separado por ponto-e-vírgula, padrão do Excel
+     * em português) com as transações do mês pedido.
+     */
+    public byte[] exportarCsv(YearMonth mes) {
+        Usuario usuario = securityUtils.getUsuarioLogado();
+        List<Transacao> transacoes = buscarTransacoesDoMes(usuario.getId(), mes);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Data;Descrição;Categoria;Tipo;Status;Valor\n");
+
+        for (Transacao t : transacoes) {
+            sb.append(t.getData()).append(";")
+                    .append(t.getDescricao().replace(";", ",")).append(";")
+                    .append(t.getCategoria() != null ? t.getCategoria().getNome() : "").append(";")
+                    .append(t.getTipo()).append(";")
+                    .append(t.getStatus()).append(";")
+                    .append(t.getValor()).append("\n");
+        }
+
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
     private List<Transacao> buscarTransacoesDoMes(Long usuarioId, YearMonth mes) {
         LocalDate inicio = mes.atDay(1);
         LocalDate fim = mes.atEndOfMonth();
         return transacaoRepository.findByUsuarioIdAndDataBetween(usuarioId, inicio, fim);
+    }
+
+    /**
+     * Busca com filtros combináveis — todos opcionais. Como o volume de dados
+     * de um app pessoal é pequeno, filtramos em memória (via Stream) depois
+     * de trazer as transações do usuário, em vez de montar uma query dinâmica
+     * complexa no banco — mais simples de ler e manter.
+     */
+    public List<Transacao> buscarComFiltros(LocalDate inicio, LocalDate fim, Long categoriaId,
+                                             Long contaId, TipoTransacao tipo, StatusTransacao status,
+                                             BigDecimal valorMin, BigDecimal valorMax, String descricaoContem) {
+        Usuario usuario = securityUtils.getUsuarioLogado();
+        List<Transacao> todas = transacaoRepository.findByUsuarioId(usuario.getId());
+
+        return todas.stream()
+                .filter(t -> inicio == null || !t.getData().isBefore(inicio))
+                .filter(t -> fim == null || !t.getData().isAfter(fim))
+                .filter(t -> categoriaId == null || t.getCategoria().getId().equals(categoriaId))
+                .filter(t -> contaId == null || (t.getConta() != null && t.getConta().getId().equals(contaId)))
+                .filter(t -> tipo == null || t.getTipo() == tipo)
+                .filter(t -> status == null || t.getStatus() == status)
+                .filter(t -> valorMin == null || t.getValor().compareTo(valorMin) >= 0)
+                .filter(t -> valorMax == null || t.getValor().compareTo(valorMax) <= 0)
+                .filter(t -> descricaoContem == null || descricaoContem.isBlank()
+                        || t.getDescricao().toLowerCase().contains(descricaoContem.toLowerCase()))
+                .sorted((a, b) -> b.getData().compareTo(a.getData()))
+                .collect(Collectors.toList());
     }
 
     private BigDecimal somaPorTipo(List<Transacao> transacoes, TipoTransacao tipo) {

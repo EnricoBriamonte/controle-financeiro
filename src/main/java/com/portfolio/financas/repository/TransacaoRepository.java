@@ -22,5 +22,9 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Long> {
 
     List<Transacao> findByUsuarioId(Long usuarioId);
 
+    List<Transacao> findByUsuarioId(Long usuarioId);
+
     List<Transacao> findByUsuarioIdAndDataBetween(Long usuarioId, LocalDate inicio, LocalDate fim);
+
+    boolean existsByRecorrenciaOrigemIdAndDataBetween(Long recorrenciaId, LocalDate inicio, LocalDate fim);
 }
