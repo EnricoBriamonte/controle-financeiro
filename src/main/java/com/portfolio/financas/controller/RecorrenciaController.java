@@ -1,4 +1,4 @@
-package com.portfolio.financas.controller;
+﻿package com.portfolio.financas.controller;
 
 import com.portfolio.financas.model.Recorrencia;
 import com.portfolio.financas.model.Transacao;
@@ -36,10 +36,6 @@ public class RecorrenciaController {
         recorrenciaService.excluir(id);
     }
 
-    /**
-     * Gera os lançamentos do mês pedido a partir de todas as recorrências
-     * ativas. Ex: POST /api/recorrencias/gerar?mes=2026-08
-     */
     @PostMapping("/gerar")
     public List<Transacao> gerar(@RequestParam @DateTimeFormat(pattern = "yyyy-MM") YearMonth mes) {
         return recorrenciaService.gerarLancamentosDoMes(mes);
