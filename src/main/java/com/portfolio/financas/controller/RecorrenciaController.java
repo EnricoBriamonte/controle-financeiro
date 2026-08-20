@@ -1,4 +1,4 @@
-﻿package com.portfolio.financas.controller;
+package com.portfolio.financas.controller;
 
 import com.portfolio.financas.model.Recorrencia;
 import com.portfolio.financas.model.Transacao;

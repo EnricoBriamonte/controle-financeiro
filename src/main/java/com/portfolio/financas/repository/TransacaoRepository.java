@@ -1,4 +1,4 @@
-﻿package com.portfolio.financas.repository;
+package com.portfolio.financas.repository;
 
 import com.portfolio.financas.model.TipoTransacao;
 import com.portfolio.financas.model.Transacao;
